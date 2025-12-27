@@ -1,0 +1,8 @@
+{
+  "name": "email-generator",
+  "private": true,
+  "workspaces": [
+    "email-editor-core",
+    "email-editor-ui"
+  ]
+}
