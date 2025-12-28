@@ -12,5 +12,6 @@
   },
   "scripts": {
     "build": "tsc"
-  }
+  },
+  "files": ["dist"]
 }
