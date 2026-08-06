@@ -1,6 +1,9 @@
 {
   "name": "email-generator",
   "private": true,
+  "scripts": {
+    "build": "npm run build --workspace=email-editor-core && npm run build --workspace=email-editor-ui"
+  },
   "workspaces": [
     "email-editor-core",
     "email-editor-ui"

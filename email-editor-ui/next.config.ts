@@ -8,6 +8,7 @@ const workspaceRoot = path.resolve(
 );
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["email-editor-core"],
   turbopack: {
     root: workspaceRoot,
   },
