@@ -1,6 +1,6 @@
 /**
  * VALIDATION STRATEGY AND IMPLEMENTATION
- * Enforces data integrity and template compliance
+ * Enforces data integrity and shared email rules
  */
 
 import type {
@@ -9,9 +9,8 @@ import type {
   EmailDocument,
   ValidationError,
   ValidationContext,
-  TemplateConfiguration,
 } from './types.js';
-import { getTemplateConfig } from './template-config.js';
+import { getEmailConfig } from './email-config.js';
 
 // ============================================================================
 // VALIDATION RULES
@@ -33,20 +32,20 @@ interface ValidationRule {
 
 /**
  * RULE 1: Block type availability
- * Ensures only allowed block types for this template are used
+ * Ensures only supported block types are used
  */
 export const blockTypeAllowedRule: ValidationRule = {
   name: 'BLOCK_TYPE_ALLOWED',
-  description: 'Block type is allowed for this template',
+  description: 'Block type is supported',
   validate: (context: ValidationContext): ValidationError[] => {
-    const { email, templateConfig } = context;
+    const { email, emailConfig } = context;
     const errors: ValidationError[] = [];
 
     email.body.blocks.forEach((block) => {
-      if (!templateConfig.allowedBlockTypes.includes(block.type)) {
+      if (!emailConfig.allowedBlockTypes.includes(block.type)) {
         errors.push({
           code: 'BLOCK_TYPE_NOT_ALLOWED',
-          message: `Block type "${block.type}" is not allowed in ${templateConfig.templateType} template`,
+          message: `Block type "${block.type}" is not supported`,
           blockId: block.id,
           blockType: block.type,
           severity: 'error',
@@ -66,7 +65,7 @@ export const blockCountConstraintRule: ValidationRule = {
   name: 'BLOCK_COUNT_CONSTRAINT',
   description: 'Block count respects per-type min/max constraints',
   validate: (context: ValidationContext): ValidationError[] => {
-    const { email, templateConfig } = context;
+    const { email, emailConfig } = context;
     const errors: ValidationError[] = [];
 
     // Count blocks by type
@@ -76,7 +75,7 @@ export const blockCountConstraintRule: ValidationRule = {
     });
 
     // Check each constraint
-    Object.entries(templateConfig.blockConstraints).forEach(([blockType, constraint]) => {
+    Object.entries(emailConfig.blockConstraints).forEach(([blockType, constraint]) => {
       if (!constraint) return;
 
       const count = blockCounts.get(blockType as BlockType) ?? 0;
@@ -112,15 +111,15 @@ export const blockCountConstraintRule: ValidationRule = {
  */
 export const totalBlockCountRule: ValidationRule = {
   name: 'TOTAL_BLOCK_COUNT',
-  description: 'Total block count does not exceed template maximum',
+  description: 'Total block count does not exceed the email maximum',
   validate: (context: ValidationContext): ValidationError[] => {
-    const { email, templateConfig } = context;
+    const { email, emailConfig } = context;
     const errors: ValidationError[] = [];
 
-    if (email.body.blocks.length > templateConfig.maxTotalBlocks) {
+    if (email.body.blocks.length > emailConfig.maxTotalBlocks) {
       errors.push({
         code: 'MAX_TOTAL_BLOCKS_EXCEEDED',
-        message: `Maximum ${templateConfig.maxTotalBlocks} total blocks allowed. Found: ${email.body.blocks.length}`,
+        message: `Maximum ${emailConfig.maxTotalBlocks} total blocks allowed. Found: ${email.body.blocks.length}`,
         severity: 'error',
       });
     }
@@ -137,12 +136,12 @@ export const mandatoryBlocksRule: ValidationRule = {
   name: 'MANDATORY_BLOCKS',
   description: 'All mandatory block types are present',
   validate: (context: ValidationContext): ValidationError[] => {
-    const { email, templateConfig } = context;
+    const { email, emailConfig } = context;
     const errors: ValidationError[] = [];
 
     const presentBlockTypes = new Set(email.body.blocks.map((b) => b.type));
 
-    templateConfig.mandatoryBlocks.forEach((blockType) => {
+    emailConfig.mandatoryBlocks.forEach((blockType) => {
       if (!presentBlockTypes.has(blockType)) {
         errors.push({
           code: 'MANDATORY_BLOCK_MISSING',
@@ -165,18 +164,18 @@ export const blockOrderRule: ValidationRule = {
   name: 'BLOCK_ORDER',
   description: 'Blocks are in the recommended order',
   validate: (context: ValidationContext): ValidationError[] => {
-    const { email, templateConfig, strict } = context;
+    const { email, emailConfig, strict } = context;
     const errors: ValidationError[] = [];
 
     // Skip if reordering is allowed or no order requirement
-    if (templateConfig.allowReordering || !templateConfig.requireBlockOrder) {
+    if (emailConfig.allowReordering || !emailConfig.requireBlockOrder) {
       return errors;
     }
 
     // Check if blocks follow required order
     let lastOrderIndex = -1;
     for (const block of email.body.blocks) {
-      const requireOrder = templateConfig.requireBlockOrder;
+      const requireOrder = emailConfig.requireBlockOrder;
       let blockOrderIndex = -1;
 
       for (let i = 0; i < requireOrder.length; i++) {
@@ -213,10 +212,10 @@ export const fixedSectionsRule: ValidationRule = {
   name: 'FIXED_SECTIONS',
   description: 'Required fixed sections are present',
   validate: (context: ValidationContext): ValidationError[] => {
-    const { email, templateConfig } = context;
+    const { email, emailConfig } = context;
     const errors: ValidationError[] = [];
 
-    if (templateConfig.helpSectionRequired && !email.helpSection) {
+    if (emailConfig.helpSectionRequired && !email.helpSection) {
       errors.push({
         code: 'HELP_SECTION_MISSING',
         message: 'Help section is required for this template',
@@ -224,7 +223,7 @@ export const fixedSectionsRule: ValidationRule = {
       });
     }
 
-    if (templateConfig.complianceSectionRequired && !email.complianceSection) {
+    if (emailConfig.complianceSectionRequired && !email.complianceSection) {
       errors.push({
         code: 'COMPLIANCE_SECTION_MISSING',
         message: 'Compliance section is required for this template',
@@ -475,9 +474,9 @@ export function validateEmailDocument(
   email: EmailDocument,
   strict: boolean = false
 ): ValidationError[] {
-  const templateConfig = getTemplateConfig(email.templateType);
+  const emailConfig = getEmailConfig();
   const context: ValidationContext = {
-    templateConfig,
+    emailConfig,
     email,
     strict,
   };

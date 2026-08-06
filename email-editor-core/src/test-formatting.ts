@@ -112,6 +112,16 @@ const testCases = [
     expected: 'Invalid token ignored',
     description: 'Invalid style token (no valid options) renders plain text',
   },
+  {
+    input: 'Use {{style:bold|italic|underline|color:#123456}}modern editing{{/style}} here',
+    expected: 'Use <span style="color:#123456;font-weight:700;font-style:italic;text-decoration:underline;">modern editing</span> here',
+    description: 'Combined visual text formatting',
+  },
+  {
+    input: 'Safe <script>alert("x")</script> text',
+    expected: 'Safe &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; text',
+    description: 'Raw HTML is escaped',
+  },
 ];
 
 console.log('Testing parseInlineFormatting function...\n');

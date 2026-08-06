@@ -6,7 +6,6 @@ import TextInput from '../TextInput';
 import NumberInput from '../NumberInput';
 
 interface ButtonFormProps {
-  label: string;
   href: string;
   backgroundColor: string;
   textColor: string;
@@ -15,7 +14,6 @@ interface ButtonFormProps {
   marginTop: number;
   paddingBottom: number;
   align: 'left' | 'center' | 'right';
-  onLabelChange: (value: string) => void;
   onHrefChange: (value: string) => void;
   onBackgroundColorChange: (value: string) => void;
   onTextColorChange: (value: string) => void;
@@ -27,7 +25,6 @@ interface ButtonFormProps {
 }
 
 export default function ButtonForm({
-  label,
   href,
   backgroundColor,
   textColor,
@@ -36,7 +33,6 @@ export default function ButtonForm({
   marginTop,
   paddingBottom,
   align,
-  onLabelChange,
   onHrefChange,
   onBackgroundColorChange,
   onTextColorChange,
@@ -48,13 +44,6 @@ export default function ButtonForm({
 }: ButtonFormProps) {
   return (
     <>
-      <TextInput
-        label="Button Text"
-        value={label}
-        onChange={onLabelChange}
-        placeholder="e.g., Investasi Sekarang"
-      />
-
       <TextInput
         label="Button Link (URL)"
         value={href}

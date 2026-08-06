@@ -21,7 +21,8 @@ import HighlightBoxForm from "./form/blocks/HighlightBoxForm";
 interface BlockFormProps {
   block?: Block;
   onUpdate?: (id: string, updates: Partial<Block>) => void;
-  onAddNew: (block: Block) => void;
+  onAddNew?: (block: Block) => void;
+  embedded?: boolean;
 }
 
 const blockTypes = [
@@ -131,10 +132,17 @@ export default function BlockForm({
   block,
   onUpdate,
   onAddNew,
+  embedded = false,
 }: BlockFormProps) {
   const initialState = getInitialState(block);
 
   const [state, setState] = useState<BlockState>(initialState);
+  const [previousBlock, setPreviousBlock] = useState<Block | undefined>(block);
+
+  if (block !== previousBlock) {
+    setPreviousBlock(block);
+    setState(getInitialState(block));
+  }
 
   const handleSave = () => {
     if (block && onUpdate) {
@@ -142,7 +150,7 @@ export default function BlockForm({
       onUpdate(block.id, updates);
     } else {
       const newBlock = createNewBlock(state);
-      if (newBlock) {
+      if (newBlock && onAddNew) {
         onAddNew(newBlock);
         setState(getInitialState());
       }
@@ -152,30 +160,38 @@ export default function BlockForm({
   const isValid = validateBlock(state);
 
   return (
-    <div className="p-4 border border-gray-300 rounded-lg bg-white space-y-4 text-black">
-      <h3 className="font-semibold text-gray-900">
-        {block ? "Edit Block" : "Add New Content Block"}
-      </h3>
+    <div
+      className={
+        embedded
+          ? "space-y-4 text-slate-950"
+          : "space-y-4 rounded-lg border border-gray-300 bg-white p-4 text-black"
+      }
+    >
+      {!embedded && (
+        <h3 className="font-semibold text-gray-900">
+          {block ? "Edit Block" : "Add New Content Block"}
+        </h3>
+      )}
 
-      <SelectInput
-        label="Content Type"
-        value={state.type}
-        onChange={(type) => setState({ ...state, type: type as typeof blockTypes[number] })}
-        disabled={!!block}
-        options={blockTypes.map((bt) => ({
-          value: bt,
-          label: blockTypeLabels[bt],
-        }))}
-      />
+      {!embedded && (
+        <SelectInput
+          label="Content Type"
+          value={state.type}
+          onChange={(type) => setState({ ...state, type: type as typeof blockTypes[number] })}
+          disabled={!!block}
+          options={blockTypes.map((bt) => ({
+            value: bt,
+            label: blockTypeLabels[bt],
+          }))}
+        />
+      )}
 
       {/* Block-specific forms */}
       {state.type === "title" && (
         <TitleForm
-          content={state.content}
           color={state.color}
           level={state.level}
           paddingBottom={state.paddingBottom}
-          onContentChange={(val) => setState({ ...state, content: val })}
           onColorChange={(val) => setState({ ...state, color: val })}
           onLevelChange={(val) => setState({ ...state, level: val })}
           onPaddingBottomChange={(val) => setState({ ...state, paddingBottom: val })}
@@ -184,12 +200,10 @@ export default function BlockForm({
 
       {state.type === "paragraph" && (
         <ParagraphForm
-          content={state.content}
           color={state.color}
           lineHeight={state.lineHeight}
           paddingBottom={state.paddingBottom}
           textAlign={state.textAlign}
-          onContentChange={(val) => setState({ ...state, content: val })}
           onColorChange={(val) => setState({ ...state, color: val })}
           onLineHeightChange={(val) => setState({ ...state, lineHeight: val })}
           onPaddingBottomChange={(val) => setState({ ...state, paddingBottom: val })}
@@ -218,7 +232,6 @@ export default function BlockForm({
 
       {state.type === "button" && (
         <ButtonForm
-          label={state.label}
           href={state.href}
           backgroundColor={state.backgroundColor}
           textColor={state.textColor}
@@ -227,7 +240,6 @@ export default function BlockForm({
           marginTop={state.marginTop}
           paddingBottom={state.paddingBottom}
           align={state.align}
-          onLabelChange={(val) => setState({ ...state, label: val })}
           onHrefChange={(val) => setState({ ...state, href: val })}
           onBackgroundColorChange={(val) => setState({ ...state, backgroundColor: val })}
           onTextColorChange={(val) => setState({ ...state, textColor: val })}
@@ -252,14 +264,12 @@ export default function BlockForm({
 
       {state.type === "highlight-box" && (
         <HighlightBoxForm
-          content={state.content}
           backgroundColor={state.backgroundColor}
           borderColor={state.borderColor}
           padding={state.padding}
           borderRadius={state.borderRadius}
           paddingBottom={state.paddingBottom}
           borderLeft={state.borderLeft}
-          onContentChange={(val) => setState({ ...state, content: val })}
           onBackgroundColorChange={(val) => setState({ ...state, backgroundColor: val })}
           onBorderColorChange={(val) => setState({ ...state, borderColor: val })}
           onPaddingChange={(val) => setState({ ...state, padding: val })}
@@ -272,9 +282,9 @@ export default function BlockForm({
       <button
         onClick={handleSave}
         disabled={!isValid}
-        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors font-medium"
+        className="min-h-11 w-full rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300"
       >
-        {block ? "Update Block" : "Add Block"}
+        {block ? "Apply changes" : "Add block"}
       </button>
     </div>
   );

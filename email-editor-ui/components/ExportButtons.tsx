@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import type { EmailDocument } from 'email-editor-core';
-import { renderEmail } from 'email-editor-core';
+import { useMemo, useState } from "react";
+import type { EmailDocument } from "email-editor-core";
+import { renderEmail } from "email-editor-core";
+import { Check, Clipboard, Download } from "lucide-react";
 
 interface ExportButtonsProps {
   email: EmailDocument;
@@ -10,51 +11,64 @@ interface ExportButtonsProps {
 
 export default function ExportButtons({ email }: ExportButtonsProps) {
   const html = useMemo(() => renderEmail(email), [email]);
+  const [copied, setCopied] = useState(false);
 
   const handleCopyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(html);
-      alert('✅ HTML copied to clipboard!');
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2200);
     } catch {
-      alert('❌ Failed to copy to clipboard');
+      setCopied(false);
     }
   };
 
   const handleDownload = () => {
-    const element = document.createElement('a');
-    element.setAttribute('href', `data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
-    element.setAttribute('download', `email-${email.templateType}-${new Date().toISOString().slice(0, 10)}.html`);
-    element.style.display = 'none';
+    const element = document.createElement("a");
+    element.setAttribute("href", `data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+    element.setAttribute("download", `email-${new Date().toISOString().slice(0, 10)}.html`);
+    element.style.display = "none";
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
   };
 
   return (
-    <div className="space-y-3">
-      <h3 className="font-semibold text-gray-900">Export Email</h3>
-      <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4">
-        <p className="text-xs text-yellow-900">
-          <span className="font-semibold">✓ Ready to send?</span> Your email includes all required sections (header, footer, compliance).
+    <section aria-labelledby="export-heading">
+      <div className="mb-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+          Delivery
+        </p>
+        <h3 id="export-heading" className="mt-1 font-semibold text-slate-950">
+          Export email
+        </h3>
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          Copy the final HTML or download a file for your email service provider.
         </p>
       </div>
+
       <div className="space-y-2">
         <button
+          type="button"
           onClick={handleCopyToClipboard}
-          className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
         >
-          📋 Copy HTML Code
+          {copied ? <Check size={17} aria-hidden="true" /> : <Clipboard size={17} aria-hidden="true" />}
+          {copied ? "Copied" : "Copy HTML"}
         </button>
         <button
+          type="button"
           onClick={handleDownload}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
         >
-          ⬇️ Download HTML File
+          <Download size={17} aria-hidden="true" />
+          Download HTML
         </button>
       </div>
-      <p className="text-xs text-gray-600 mt-4">
-        Use the HTML in your email service provider (ESP) to send campaigns via Mailchimp, SendGrid, etc.
+
+      <p className="mt-3 text-xs text-slate-400" aria-live="polite">
+        {copied ? "HTML copied to your clipboard." : "Fixed compliance sections are included automatically."}
       </p>
-    </div>
+    </section>
   );
 }

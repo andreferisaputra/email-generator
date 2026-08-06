@@ -1,41 +1,31 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import type { EmailDocument } from 'email-editor-core';
-import { renderEmail } from 'email-editor-core';
+import { useMemo } from "react";
+import type { EmailDocument } from "email-editor-core";
+import { renderEmail } from "email-editor-core";
 
 interface PreviewProps {
   email: EmailDocument;
+  viewport?: "desktop" | "mobile";
 }
 
-export default function Preview({ email }: PreviewProps) {
+export default function Preview({ email, viewport = "desktop" }: PreviewProps) {
   const html = useMemo(() => renderEmail(email), [email]);
+  const width = viewport === "desktop" ? 600 : 375;
 
   return (
-    <div className="space-y-3">
-      <div>
-        <h3 className="font-semibold text-gray-900">Live Preview</h3>
-        <p className="text-xs text-gray-600 mt-1">600px viewport (desktop email width)</p>
+    <div className="flex min-h-[760px] justify-center overflow-x-auto px-4 py-8 sm:px-8">
+      <div
+        className="shrink-0 overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(24,42,34,0.16)]"
+        style={{ width }}
+      >
+        <iframe
+          srcDoc={html}
+          className="block h-[820px] w-full border-0 bg-white"
+          title={`${viewport} email preview`}
+          sandbox="allow-popups allow-popups-to-escape-sandbox"
+        />
       </div>
-      <div className="border border-gray-300 rounded-lg overflow-hidden bg-white shadow">
-        <div
-          className="bg-gray-100 flex justify-center p-4"
-          style={{ width: '100%' }}
-        >
-          <iframe
-            srcDoc={html}
-            className="border-none"
-            style={{
-              width: '600px',
-              maxWidth: '100%',
-              height: '800px',
-              backgroundColor: 'white',
-            }}
-            title="Email Preview"
-          />
-        </div>
-      </div>
-      <p className="text-xs text-gray-500 text-center">Scroll in preview to see full email including footer</p>
     </div>
   );
 }

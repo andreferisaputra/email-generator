@@ -1,17 +1,7 @@
 /**
  * CORE DATA MODEL FOR BLOCK-BASED HTML EMAIL GENERATOR
- * Rock-solid foundation for email template management
+ * Rock-solid foundation for email document management
  */
-
-// ============================================================================
-// TEMPLATE TYPES
-// ============================================================================
-
-/**
- * Supported email template types
- * Each has distinct allowed blocks and layout constraints
- */
-export type TemplateType = "open-fund" | "close-fund" | "newsletter";
 
 // ============================================================================
 // BLOCK TYPES
@@ -68,7 +58,7 @@ export interface TextSanitizationConfig {
 
 /**
  * Title block: Single heading for sections
- * Max 2 allowed per template typically
+ * Section heading block
  */
 export interface TitleBlock {
   type: "title";
@@ -111,7 +101,7 @@ export interface ImageBlock {
 
 /**
  * Button block: Call-to-action button
- * Limited to 1-2 per template
+ * Call-to-action block
  */
 export interface ButtonBlock {
   type: "button";
@@ -172,7 +162,7 @@ export type Block =
 
 /**
  * Fixed section: Template logo/header
- * Consistent across all templates
+ * Shared across generated emails
  */
 export interface EmailHeader {
   logoUrl: string; // HTTPS
@@ -182,7 +172,7 @@ export interface EmailHeader {
 
 /**
  * Fixed section: Contact and support info
- * Consistent across all templates
+ * Shared across generated emails
  */
 export interface HelpSection {
   title: string; // e.g., "Butuh Bantuan untuk Mulai?"
@@ -198,7 +188,7 @@ export interface HelpSection {
 
 /**
  * Fixed section: Compliance and legal
- * Varies per template
+ * Compliance information
  */
 export interface ComplianceSection {
   text: string; // e.g., "PT Dana Kripto Indonesia sebagai peserta sandbox OJK..."
@@ -228,12 +218,11 @@ export interface EmailFooter {
 
 /**
  * Email document: Complete structure
- * Represents a fully-formed email with template, body blocks, and fixed sections
+ * Represents a fully-formed email with body blocks and fixed sections
  */
 export interface EmailDocument {
   // Metadata
   id: string; // UUID
-  templateType: TemplateType;
   version: number; // For change tracking
   createdAt: Date;
   updatedAt: Date;
@@ -241,7 +230,7 @@ export interface EmailDocument {
   // Variable content (THE BODY)
   blocks: Block[];
 
-  // Fixed sections (same per template)
+  // Fixed sections shared by every generated email
   header: EmailHeader;
   body: {
     blocks: Block[]; // Main content blocks
@@ -276,12 +265,10 @@ export interface ValidationError {
 }
 
 /**
- * Template configuration: Rules per template
+ * Email configuration: shared rules for every generated email
  * Enforced by validator
  */
-export interface TemplateConfiguration {
-  templateType: TemplateType;
-
+export interface EmailConfiguration {
   // Block availability
   allowedBlockTypes: BlockType[];
 
@@ -316,7 +303,7 @@ export interface TemplateConfiguration {
  * Passed to validator to enforce rules
  */
 export interface ValidationContext {
-  templateConfig: TemplateConfiguration;
+  emailConfig: EmailConfiguration;
   email: EmailDocument;
   strict: boolean; // If true, warnings become errors
 }

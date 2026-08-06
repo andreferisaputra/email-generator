@@ -2,16 +2,13 @@
 
 import ColorInput from '../ColorInput';
 import SelectInput from '../SelectInput';
-import TextArea from '../TextArea';
 import NumberInput from '../NumberInput';
 
 interface ParagraphFormProps {
-  content: string;
   color: string;
   lineHeight: number;
   paddingBottom: number;
   textAlign: 'left' | 'center' | 'right';
-  onContentChange: (value: string) => void;
   onColorChange: (value: string) => void;
   onLineHeightChange: (value: number) => void;
   onPaddingBottomChange: (value: number) => void;
@@ -19,12 +16,10 @@ interface ParagraphFormProps {
 }
 
 export default function ParagraphForm({
-  content,
   color,
   lineHeight,
   paddingBottom,
   textAlign,
-  onContentChange,
   onColorChange,
   onLineHeightChange,
   onPaddingBottomChange,
@@ -32,15 +27,6 @@ export default function ParagraphForm({
 }: ParagraphFormProps) {
   return (
     <>
-      <TextArea
-        label="Paragraph Content"
-        value={content}
-        onChange={onContentChange}
-        placeholder="e.g., Kabar gembira untuk investor di Indonesia! Open fund NOBI Dana Kripto Indeks Kelas A sudah dimulai hari ini."
-        rows={4}
-        showFormatting={true}
-      />
-
       <ColorInput
         label="Text Color"
         value={color}

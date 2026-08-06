@@ -10,7 +10,6 @@
 // ============================================================================
 
 import type {
-  TemplateType,
   BlockType,
   AllowedInlineTag,
   TextSanitizationConfig,
@@ -28,18 +27,15 @@ import type {
   EmailDocument,
   ValidationError,
   ValidationContext,
-  TemplateConfiguration,
+  EmailConfiguration,
   SanitizationContext,
 } from "./types.js";
 
 import {
-  OPEN_FUND_CONFIG,
-  CLOSE_FUND_CONFIG,
-  NEWSLETTER_CONFIG,
-  TEMPLATE_CONFIG_REGISTRY,
-  getTemplateConfig,
+  EMAIL_CONFIG,
+  getEmailConfig,
   BLOCK_CONSTRAINT_MESSAGES,
-} from "./template-config.js";
+} from "./email-config.js";
 
 import {
   blockTypeAllowedRule,
@@ -83,7 +79,6 @@ import { renderBlock } from "./renderer/renderBlock.js";
 // ============================================================================
 
 export type {
-  TemplateType,
   BlockType,
   AllowedInlineTag,
   TextSanitizationConfig,
@@ -101,16 +96,13 @@ export type {
   EmailDocument,
   ValidationError,
   ValidationContext,
-  TemplateConfiguration,
+  EmailConfiguration,
   SanitizationContext,
 };
 
 export {
-  OPEN_FUND_CONFIG,
-  CLOSE_FUND_CONFIG,
-  NEWSLETTER_CONFIG,
-  TEMPLATE_CONFIG_REGISTRY,
-  getTemplateConfig,
+  EMAIL_CONFIG,
+  getEmailConfig,
   BLOCK_CONSTRAINT_MESSAGES,
   blockTypeAllowedRule,
   blockCountConstraintRule,
@@ -152,21 +144,18 @@ export {
  *
  * USAGE:
  * ```typescript
- * const email = createEmail('open-fund', [
+ * const email = createEmail([
  *   { type: 'title', id: 'title-1', content: 'Welcome' },
  *   { type: 'paragraph', id: 'para-1', content: 'This is an email' }
  * ]);
  * ```
  */
 export function createEmail(
-  templateType: string,
-  blocks: any[],
+  blocks: Block[] = [],
   personalizationVars?: Record<string, string>
 ): EmailDocument {
-  const config = getTemplateConfig(templateType);
-
   // Sanitize all blocks
-  const sanitizedBlocks = blocks.map((block: any) => {
+  const sanitizedBlocks = blocks.map((block) => {
     try {
       return sanitizeBlock(block);
     } catch (e) {
@@ -178,7 +167,6 @@ export function createEmail(
   // Create email document
   const email: EmailDocument = {
     id: generateUUID(),
-    templateType: templateType as import("./types").TemplateType,
     version: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -256,7 +244,6 @@ export function generateReport(email: EmailDocument): string {
 ║  EMAIL VALIDATION REPORT                              ║
 ╚════════════════════════════════════════════════════════╝
 
-Template Type:  ${email.templateType}
 Status:         ${summary.isValid ? "✅ VALID" : "❌ INVALID"}
 Blocks:         ${email.body.blocks.length}
 Errors:         ${summary.errorCount}
@@ -321,7 +308,7 @@ function generateUUID(): string {
  * 📄 types.ts
  *    TypeScript interfaces and types
  *
- * 📄 template-config.ts
+ * 📄 email-config.ts
  *    Per-template rules and constraints
  *
  * 📄 validator.ts
@@ -335,7 +322,7 @@ export const DOCUMENTATION = {
   ARCHITECTURE: "ARCHITECTURE.md",
   PSEUDOCODE: "PSEUDOCODE.md",
   TYPES: "types.ts",
-  TEMPLATE_CONFIG: "template-config.ts",
+  EMAIL_CONFIG: "email-config.ts",
   VALIDATOR: "validator.ts",
   SANITIZER: "sanitizer.ts",
 };
@@ -349,7 +336,7 @@ export const DOCUMENTATION = {
  *
  * 1. Create an email:
  *    ```
- *    const email = createEmail('open-fund', [
+ *    const email = createEmail([
  *      { type: 'title', id: 'h1', content: 'Welcome' },
  *      { type: 'paragraph', id: 'p1', content: 'Hello!' }
  *    ]);
@@ -371,12 +358,7 @@ export const DOCUMENTATION = {
  *    const clean = sanitizeTextContent(userInput, 'paragraph');
  *    ```
  *
- * TEMPLATE TYPES:
- *   - 'open-fund'   : Fund launch announcement
- *   - 'close-fund'  : Fund closure notification
- *   - 'newsletter'  : Educational/updates
- *
- * BLOCK TYPES (all templates):
+ * BLOCK TYPES:
  *   - title         : Heading (h1/h2/h3)
  *   - paragraph     : Body text with links
  *   - image         : Responsive image (HTTPS)
@@ -386,7 +368,7 @@ export const DOCUMENTATION = {
  *
  * VALIDATION:
  *   Automatic checks:
- *   ✓ Block type allowed per template
+ *   ✓ Block type is supported
  *   ✓ Min/max block counts per type
  *   ✓ Total block limit
  *   ✓ Mandatory blocks present

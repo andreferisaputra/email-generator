@@ -50,7 +50,7 @@ export default function ImageForm({
         label="Alt Text (Required for accessibility)"
         value={alt}
         onChange={onAltChange}
-        placeholder="e.g., Hero image for fund launch"
+        placeholder="e.g., Campaign hero image"
       />
 
       <NumberInput

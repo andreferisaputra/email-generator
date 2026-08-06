@@ -1,18 +1,15 @@
 'use client';
 
 import ColorInput from '../ColorInput';
-import TextArea from '../TextArea';
 import NumberInput from '../NumberInput';
 
 interface HighlightBoxFormProps {
-  content: string;
   backgroundColor: string;
   borderColor: string;
   padding: string;
   borderRadius: number;
   paddingBottom: number;
   borderLeft: boolean;
-  onContentChange: (value: string) => void;
   onBackgroundColorChange: (value: string) => void;
   onBorderColorChange: (value: string) => void;
   onPaddingChange: (value: string) => void;
@@ -22,14 +19,12 @@ interface HighlightBoxFormProps {
 }
 
 export default function HighlightBoxForm({
-  content,
   backgroundColor,
   borderColor,
   padding,
   borderRadius,
   paddingBottom,
   borderLeft,
-  onContentChange,
   onBackgroundColorChange,
   onBorderColorChange,
   onPaddingChange,
@@ -39,14 +34,6 @@ export default function HighlightBoxForm({
 }: HighlightBoxFormProps) {
   return (
     <>
-      <TextArea
-        label="Featured Content"
-        value={content}
-        onChange={onContentChange}
-        placeholder="e.g., Aset kamu akan dikelola manajer dana kripto profesional dengan strategi teruji..."
-        rows={4}
-      />
-
       <ColorInput
         label="Background Color"
         value={backgroundColor}
